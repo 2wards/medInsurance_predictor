@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Medical Predictor</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+/* RESULT CARD */
+.result-card {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 1s ease;
+    width: 50%;
+    padding: 40px;
+    background: rgba(30, 41, 59, 0.85);
+    border-radius: 25px;
+    box-shadow: 0 0 50px rgba(0, 255, 200, 0.3);
+    text-align: center;
+}
+.result-card.show {
+    opacity: 1;
+    transform: scale(1);
+}
+.high { color: red; }
+.low { color: lightgreen; }
+.risk-video { width: 300px; margin-top: 20px; border-radius: 15px; box-shadow:0 0 25px red; }
+
+/* INSIGHT BOX */
+.insight-box {
+    flex: 1;
+    height: 500px;
+    background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(0,255,200,0.3);
+    overflow: hidden;
+}
+.insight-box img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 15px;
+}
+
+/* DASHBOARD LAYOUT */
+.dashboard-container {
+    display: flex;
+    width: 85%;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+}
+.dashboard-container .form-box {
+    flex: 1;
+}
+.dashboard-container .insight-box {
+    flex: 1;
+}
+
+/* HERO BUTTONS */
+.hero-buttons {
+    display:flex;
+    gap:15px;
+    margin-top:15px;
+}
+
+/* GENERAL INPUTS */
+input, select, button {
+    margin: 12px 0;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #1f2937;
+    color: white;
+}
+input:focus, select:focus { outline:none; box-shadow:0 0 15px #00f5c4; }
+button { cursor: pointer; background:#00f5c4; font-weight:bold; transition:0.3s; }
+button:hover { transform:scale(1.05); background:#0ff; }
+</style>
+</head>
+<body>
+
+<!-- HERO SECTION -->
+<section class="section landing">
+    <div class="landing-bg"></div>
+    <div class="landing-content">
+        <div class="hero-box">
+            <div class="hero-text">
+                <h1>AI Medical Insurance Predictor</h1>
+                <p>Smart Risk & Cost Intelligence System</p>
+                <div class="hero-buttons">
+                    <button onclick="goDashboard()">Start Prediction</button>
+                    <a href="/dataset-preview"><button type="button">View Dataset</button></a>
+                </div>
+            </div>
+            <div class="hero-video">
+                <video autoplay muted loop playsinline>
+                    <source src="{{ url_for('static', filename='videos/robot-guide.mp4') }}" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="section dashboard" id="dashboard">
+    <video autoplay muted loop class="dashboard-bg">
+        <source src="{{ url_for('static', filename='videos/dashboard-bg.mp4') }}" type="video/mp4">
+    </video>
+    <div class="dashboard-overlay"></div>
+
+    <div class="dashboard-container">
+
+        <!-- MODEL INSIGHT -->
+        <div>
+            <select id="insightSelect" style="width:100%;padding:12px;border-radius:12px;margin-bottom:15px;">
+                <option value="">-- Select Model Insight --</option>
+                <option value="model-performance">Model Performance</option>
+                <option value="confusion-matrix">Confusion Matrix</option>
+                <option value="feature-importance">Feature Importance</option>
+                <option value="charges-distribution">Charges Distribution</option>
+                <option value="correlation-heatmap">Correlation Heatmap</option>
+                <option value="age-vs-charges">Age vs Charges</option>
+                <option value="smoker-impact">Smoker Impact</option>
+            </select>
+            <div class="insight-box" id="insightBox">
+                <p style="color:white;">Select an insight above</p>
+            </div>
+        </div>
+
+        <!-- ENTER DETAILS FORM -->
+        <div class="form-box">
+            <h2>Enter Your Details</h2>
+            <form method="POST">
+                <input type="number" name="age" placeholder="Age" required>
+                <input type="number" step="0.1" name="bmi" id="bmi" placeholder="BMI" required>
+                <input type="number" name="children" placeholder="Children" required>
+                <select name="sex">
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+                <select name="smoker">
+                    <option value="0">Non-Smoker</option>
+                    <option value="1">Smoker</option>
+                </select>
+                <select name="region">
+                    <option value="0">Southwest</option>
+                    <option value="1">Southeast</option>
+                    <option value="2">Northwest</option>
+                    <option value="3">Northeast</option>
+                </select>
+                <button type="submit">Predict</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- RESULT SECTION -->
+{% if result %}
+<section class="section result" id="resultSection">
+    <div class="result-card show">
+        <h2>💰 ₹ {{ result.charges }}</h2>
+        <h3 class="{{ 'high' if 'HIGH' in result.risk else 'low' }}">
+            {{ result.risk }}
+        </h3>
+        {% if 'HIGH' in result.risk %}
+        <video autoplay muted loop class="risk-video">
+            <source src="{{ url_for('static', filename='videos/sad-robot.mp4') }}" type="video/mp4">
+        </video>
+        {% endif %}
+        <h4>Top Influencing Factors</h4>
+        <ul>
+            {% for f,v in result.features %}
+                <li>{{ f }} ({{ (v*100)|round(2) }}%)</li>
+            {% endfor %}
+        </ul>
+        <p class="fun-line">{{ result.insight }}</p>
+    </div>
+</section>
+{% endif %}
+
+<script>
+// SCROLL TO DASHBOARD
+function goDashboard(){
+    document.getElementById("dashboard").scrollIntoView({behavior:'smooth'});
+}
+
+// BMI BOX HIGHLIGHT
+document.addEventListener("DOMContentLoaded", function(){
+    let bmiInput = document.getElementById("bmi");
+    if(bmiInput){
+        bmiInput.addEventListener("input", function(){
+            if(this.value > 30){
+                this.style.boxShadow = "0 0 20px red";
+            } else {
+                this.style.boxShadow = "0 0 15px #00f5c4";
+            }
+        });
+    }
+});
+
+// SHOW RESULT SCROLL
+{% if result %}
+window.onload = function(){
+    document.getElementById("resultSection").scrollIntoView({behavior:'smooth'});
+};
+{% endif %}
+
+// MODEL INSIGHT SELECTOR
+const insightSelect = document.getElementById("insightSelect");
+const insightBox = document.getElementById("insightBox");
+
+insightSelect.addEventListener("change", function(){
+    const val = this.value;
+    if(!val) return;
+    insightBox.innerHTML = `<p style="color:white;">Loading...</p>`;
+    const img = document.createElement("img");
+    img.src = `/${val}`;
+    img.onload = () => {
+        insightBox.innerHTML = "";
+        insightBox.appendChild(img);
+    };
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Insurance Dataset</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #0f172a;
+            color: rgb(246, 246, 246);
+        }
+
+        .section {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Background Image Blur */
+        .landing-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("../static/images/medroom.jpeg") center/cover no-repeat;
+            filter: blur(8px);
+            transform: scale(1.1);
+            z-index: -2;
+        }
+
+        /* Dark Overlay */
+        .section::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.65);
+            z-index: -1;
+        }
+
+        .hero-box {
+            width: 85%;
+            max-width: 1200px;
+            padding: 40px;
+            border-radius: 25px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(0, 255, 200, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .hero-text {
+            text-align: center;
+        }
+
+        .hero-text h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .hero-text p {
+            opacity: 0.8;
+        }
+
+        /* Table Container */
+        .table-container {
+            background: rgb(54, 94, 150);
+            padding: 20px;
+            border-radius: 15px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #00f5c4;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #000000;
+            text-align: center;
+        }
+
+        tr:hover {
+            background: #c2a7a7;
+        }
+
+        /* Back Button */
+        .back-btn {
+            align-self: center;
+            padding: 12px 35px;
+            border-radius: 30px;
+            border: none;
+            background: #00f5c4;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            background: #0ff;
+        }
+
+        /* Scrollbar styling */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #00f5c4;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<section class="section">
+
+    <div class="landing-bg"></div>
+
+    <div class="hero-box">
+
+        <div class="hero-text">
+            <h1>Insurance Dataset</h1>
+            <p>Preview of First 50 Rows</p>
+        </div>
+
+        <div class="table-container">
+            {{ table | safe }}
+        </div>
+
+        <a href="/">
+            <button class="back-btn">⬅ Back to Home</button>
+        </a>
+
+    </div>
+
+</section>
+
+</body>
+</html>

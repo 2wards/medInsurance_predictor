@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prediction Result</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+.result-card {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 1s ease;
+}
+.result-card.show {
+    opacity: 1;
+    transform: scale(1);
+}
+.high { color: red; }
+.low { color: lightgreen; }
+.risk-video { width: 200px; margin-top: 10px; border-radius: 10px; }
+</style>
+<script>
+window.onload = function(){
+    let box = document.getElementById("resultCard");
+    if(box) box.classList.add("show");
+};
+</script>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 Prediction Result</h1>
+
+    <div class="result-card" id="resultCard">
+
+        <div class="result-box">
+            💰 Estimated Charges: ₹ {{ charges }}
+        </div>
+
+        <br>
+
+        {% if risk == "HIGH RISK" %}
+            <h2 class="high">⚠️ HIGH RISK</h2>
+        {% else %}
+            <h2 class="low">✅ LOW RISK</h2>
+        {% endif %}
+
+        {% if risk == "HIGH RISK" %}
+        <video autoplay muted loop class="risk-video">
+            <source src="{{ url_for('static', filename='videos/sad-robot.mp4') }}" type="video/mp4">
+        </video>
+        {% endif %}
+
+        <h3>🔍 Top Influencing Factors</h3>
+        <ul>
+            {% for feature, value in feature_importance %}
+                <li>{{ feature }} ({{ (value*100)|round(2) }}%)</li>
+            {% endfor %}
+        </ul>
+
+        <p class="fun-line">{{ insight }}</p>
+
+        <br>
+        <a href="{{ url_for('home') }}">
+            <button>Predict Again</button>
+        </a>
+
+    </div>
+</div>
+
+</body>
+</html>
