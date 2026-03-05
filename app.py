@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')  # Important for Flask
+matplotlib.use('Agg')  # Use non-GUI backend for server
 import matplotlib.pyplot as plt
 from io import BytesIO
 from sklearn.metrics import r2_score, accuracy_score, confusion_matrix
@@ -17,13 +17,14 @@ app = Flask(__name__)
 DATA_PATH = os.path.join(os.getcwd(), "insurance.csv")
 data = pd.read_csv(DATA_PATH)
 
-data['sex'] = data['sex'].map({'female':0,'male':1})
-data['smoker'] = data['smoker'].map({'no':0,'yes':1})
+# Encode categorical features
+data['sex'] = data['sex'].map({'female': 0, 'male': 1})
+data['smoker'] = data['smoker'].map({'no': 0, 'yes': 1})
 data['region'] = data['region'].map({
-    'southwest':0,
-    'southeast':1,
-    'northwest':2,
-    'northeast':3
+    'southwest': 0,
+    'southeast': 1,
+    'northwest': 2,
+    'northeast': 3
 })
 
 feature_names = ["age", "sex", "bmi", "children", "smoker", "region"]
@@ -35,7 +36,6 @@ y_clf = (data["charges"] > 20000).astype(int)
 X_train, X_test, y_train_reg, y_test_reg = train_test_split(
     X, y_reg, test_size=0.2, random_state=42
 )
-
 _, _, y_train_clf, y_test_clf = train_test_split(
     X, y_clf, test_size=0.2, random_state=42
 )
@@ -43,6 +43,14 @@ _, _, y_train_clf, y_test_clf = train_test_split(
 # ---------------- LOAD MODELS ---------------- #
 reg_model = joblib.load("models/regression_models.pkl")
 clf_model = joblib.load("models/classification_models.pkl")
+
+# ---------------- HELPER FUNCTION ---------------- #
+def create_plot(fig):
+    img = BytesIO()
+    fig.savefig(img, format='png', bbox_inches='tight')
+    img.seek(0)
+    plt.close(fig)
+    return send_file(img, mimetype='image/png')
 
 # ---------------- HOME ROUTE ---------------- #
 @app.route("/", methods=["GET", "POST"])
@@ -87,14 +95,6 @@ def home():
 def dataset_preview():
     table = data.head(50).to_html(index=False)
     return render_template("dataset.html", table=table)
-
-# ---------------- HELPER FUNCTION ---------------- #
-def create_plot(fig):
-    img = BytesIO()
-    fig.savefig(img, format='png', bbox_inches='tight')
-    img.seek(0)
-    plt.close(fig)
-    return send_file(img, mimetype='image/png')
 
 # ---------------- 1️⃣ MODEL PERFORMANCE ---------------- #
 @app.route("/model-performance")
@@ -178,4 +178,6 @@ def smoker_impact():
 
 # ---------------- RUN APP ---------------- #
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))  # Render sets this automatically
+    app.run(host="0.0.0.0", port=port)
